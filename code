@@ -1,0 +1,63 @@
+import java.util.*;
+
+public class MusicRecommendationEngine {
+    // Simulated data structures
+    private Map<String, Set<String>> userListeningHistory;
+    private Map<String, Set<String>> songGenres;
+
+    public MusicRecommendationEngine() {
+        // Initialize data structures
+        userListeningHistory = new HashMap<>();
+        songGenres = new HashMap<>();
+        // Populate data structures with sample data
+        initializeSampleData();
+    }
+
+    public List<String> recommendSongs(String userId, int numRecommendations) {
+        // Retrieve the listening history of the user
+        Set<String> userHistory = userListeningHistory.getOrDefault(userId, new HashSet<>());
+
+        // Perform collaborative filtering by finding similar users
+        Map<String, Integer> songScores = new HashMap<>();
+        for (String user : userListeningHistory.keySet()) {
+            if (!user.equals(userId)) {
+                Set<String> userSongs = userListeningHistory.get(user);
+                for (String song : userSongs) {
+                    // Increase the score for each song the similar user has listened to
+                    songScores.put(song, songScores.getOrDefault(song, 0) + 1);
+                }
+            }
+        }
+
+        // Sort the songs based on scores in descending order
+        List<String> recommendedSongs = new ArrayList<>(songScores.keySet());
+        recommendedSongs.sort((s1, s2) -> songScores.get(s2) - songScores.get(s1));
+
+        // Filter out the songs already listened by the user
+        recommendedSongs.removeAll(userHistory);
+
+        // Return the top N recommended songs
+        return recommendedSongs.subList(0, Math.min(numRecommendations, recommendedSongs.size()));
+    }
+
+    // Simulated initialization of sample data
+    private void initializeSampleData() {
+        // Simulated user listening history
+        userListeningHistory.put("user1", new HashSet<>(Arrays.asList("Shape of You", "Dance Monkey", "Believer")));
+        userListeningHistory.put("user2", new HashSet<>(Arrays.asList("Dance Monkey", "Havana", "Bad Guy")));
+        userListeningHistory.put("user3", new HashSet<>(Arrays.asList("Shape of You", "Believer", "Bad Guy")));
+
+        // Simulated song genres
+        songGenres.put("Shape of You", new HashSet<>(Arrays.asList("Pop", "Dance")));
+        songGenres.put("Dance Monkey", new HashSet<>(Arrays.asList("Pop", "Alternative")));
+        songGenres.put("Believer", new HashSet<>(Arrays.asList("Rock", "Alternative")));
+        songGenres.put("Havana", new HashSet<>(Arrays.asList("Pop", "Latin")));
+        songGenres.put("Bad Guy", new HashSet<>(Arrays.asList("Pop", "Alternative")));
+    }
+
+    public static void main(String[] args) {
+        MusicRecommendationEngine recommendationEngine = new MusicRecommendationEngine();
+        List<String> recommendedSongs = recommendationEngine.recommendSongs("user1", 3);
+        System.out.println("Recommended Songs: " + recommendedSongs);
+    }
+}
